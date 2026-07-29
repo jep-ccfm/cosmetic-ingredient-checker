@@ -1,0 +1,9 @@
+{
+  "name": "cosmetic-ingredient-checker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "화장품 전성분표 오탈자 검사기 (PDF 단상자 ↔ 엑셀 문안 대조)",
+  "engines": {
+    "node": ">=18"
+  }
+}
