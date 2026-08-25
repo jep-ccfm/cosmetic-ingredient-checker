@@ -3,60 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>화장품 성분 오탈자 검사기</title>
+  <title>화장품 패키지 문안 검수기</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="app">
     <!-- 사이드바 -->
     <aside class="sidebar">
-      <h1 class="title">화장품 성분<br />오탈자 검사기</h1>
+      <h1 class="title">화장품 패키지<br />문안 검수기</h1>
       <hr class="divider" />
 
-      <label class="field-label">PDF 파일 (패키지 단상자)</label>
-      <label class="file-btn" for="pdf-input">PDF 선택</label>
-      <input id="pdf-input" type="file" accept="application/pdf" hidden />
-      <p id="pdf-name" class="file-name">선택된 파일 없음</p>
+      <label class="field-label">① 기준 문안 PDF <span class="tag ok">정답</span></label>
+      <label class="file-btn" for="ref-input">기준 문안 선택</label>
+      <input id="ref-input" type="file" accept="application/pdf" hidden />
+      <p id="ref-name" class="file-name">선택된 파일 없음</p>
 
-      <label class="field-label">엑셀 파일 (작성 문안)</label>
-      <label class="file-btn" for="excel-input">엑셀 선택</label>
-      <input id="excel-input" type="file" accept=".xlsx,.xls,.xlsm" hidden />
-      <p id="excel-name" class="file-name">선택된 파일 없음</p>
+      <label class="field-label">② 디자인 PDF <span class="tag err">검수 대상</span></label>
+      <label class="file-btn" for="target-input">디자인 파일 선택</label>
+      <input id="target-input" type="file" accept="application/pdf" hidden />
+      <p id="target-name" class="file-name">선택된 파일 없음</p>
 
-      <div class="loc-row">
-        <div class="loc-col">
-          <label class="field-label sm">시트명</label>
-          <input id="sheet-name" type="text" value="Sheet1" />
-        </div>
-        <div class="loc-col">
-          <label class="field-label sm">셀 주소</label>
-          <input id="cell-addr" type="text" value="A1" />
-        </div>
-      </div>
-
-      <button id="analyze-btn" class="analyze-btn">분석 시작</button>
-      <p class="hint">전성분 텍스트는 브라우저에서만 처리되며, 이미지 판독 시에만 서버로 전송됩니다.</p>
+      <button id="analyze-btn" class="analyze-btn">검수 시작</button>
+      <p class="hint">두 PDF를 내용(문구) 기준으로 대조합니다. 위치가 달라도, 이미지가 회전/저해상도여도 자동으로 판독합니다. 이미지는 검수 시에만 서버를 거쳐 전송되며 API 키는 서버에만 보관됩니다.</p>
     </aside>
 
     <!-- 콘텐츠 -->
     <main class="content">
-      <p id="status" class="status">파일을 선택한 후 [분석 시작]을 누르세요.</p>
+      <p id="status" class="status">기준 문안 PDF와 디자인 PDF를 선택한 후 [검수 시작]을 누르세요.</p>
 
       <div class="tabs">
-        <button class="tab active" data-tab="result">오탈자 결과</button>
-        <button class="tab" data-tab="pdf">PDF 추출 성분</button>
-        <button class="tab" data-tab="excel">엑셀 성분</button>
+        <button class="tab active" data-tab="result">검수 결과</button>
+        <button class="tab" data-tab="ref">기준 문안 텍스트</button>
+        <button class="tab" data-tab="target">디자인 텍스트</button>
       </div>
 
       <section id="tab-result" class="tab-panel active"></section>
-      <section id="tab-pdf" class="tab-panel"></section>
-      <section id="tab-excel" class="tab-panel"></section>
+      <section id="tab-ref" class="tab-panel"></section>
+      <section id="tab-target" class="tab-panel"></section>
     </main>
   </div>
 
-  <!-- SheetJS (엑셀 읽기) -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- 앱 로직 (pdf.js는 모듈 내부에서 import) -->
   <script type="module" src="./app.js"></script>
 </body>
 </html>
