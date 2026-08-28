@@ -1,5 +1,6 @@
 {
   "functions": {
-    "api/compare.js": { "maxDuration": 60 }
+    "api/compare.js": { "maxDuration": 60 },
+    "api/fetch.js": { "maxDuration": 30 }
   }
 }

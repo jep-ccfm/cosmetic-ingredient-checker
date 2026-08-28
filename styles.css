@@ -59,6 +59,13 @@ body {
 .file-name { font-size: 11px; color: var(--text-dim); margin-top: 6px; word-break: break-all; min-height: 14px; }
 .file-name.set { color: var(--text); }
 
+.or { font-size: 10px; color: var(--text-dim); text-align: center; margin: 8px 0 6px; letter-spacing: 1px; }
+.url-input {
+  width: 100%; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-family: inherit;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text);
+}
+.url-input::placeholder { color: var(--text-dim); }
+
 .analyze-btn { margin-top: 24px; padding: 14px; font-size: 15px; font-weight: 700; background: var(--accent); color: #fff; }
 .analyze-btn:hover { background: var(--accent-hover); }
 .analyze-btn:disabled { opacity: 0.55; cursor: not-allowed; }

@@ -13,23 +13,29 @@
       <h1 class="title">화장품 패키지<br />문안 검수기</h1>
       <hr class="divider" />
 
-      <label class="field-label">① 기준 문안 PDF <span class="tag ok">정답</span></label>
-      <label class="file-btn" for="ref-input">기준 문안 선택</label>
-      <input id="ref-input" type="file" accept="application/pdf" hidden />
+      <!-- ① 기준 문안 -->
+      <label class="field-label">① 기준 문안 <span class="tag ok">정답</span></label>
+      <label class="file-btn" for="ref-input">파일 선택 (PDF·이미지)</label>
+      <input id="ref-input" type="file" accept=".pdf,image/*" hidden />
       <p id="ref-name" class="file-name">선택된 파일 없음</p>
+      <div class="or">또는 링크</div>
+      <input id="ref-url" class="url-input" type="text" placeholder="구글 시트/드라이브/URL 링크" />
 
-      <label class="field-label">② 디자인 PDF <span class="tag err">검수 대상</span></label>
-      <label class="file-btn" for="target-input">디자인 파일 선택</label>
-      <input id="target-input" type="file" accept="application/pdf" hidden />
+      <!-- ② 디자인 -->
+      <label class="field-label">② 디자인 <span class="tag err">검수 대상</span></label>
+      <label class="file-btn" for="target-input">파일 선택 (PDF·이미지)</label>
+      <input id="target-input" type="file" accept=".pdf,image/*" hidden />
       <p id="target-name" class="file-name">선택된 파일 없음</p>
+      <div class="or">또는 링크</div>
+      <input id="target-url" class="url-input" type="text" placeholder="구글 드라이브/URL 링크" />
 
       <button id="analyze-btn" class="analyze-btn">검수 시작</button>
-      <p class="hint">두 PDF를 내용(문구) 기준으로 대조합니다. 위치가 달라도, 이미지가 회전/저해상도여도 자동으로 판독합니다. 이미지는 검수 시에만 서버를 거쳐 전송되며 API 키는 서버에만 보관됩니다.</p>
+      <p class="hint">PDF 권장 · 이미지(jpg/png)와 링크도 가능. 링크는 <b>‘링크가 있는 모든 사용자–보기’로 공개 공유</b>된 파일만 읽힙니다. 파일과 링크를 모두 넣으면 <b>링크가 우선</b>합니다. 위치가 달라도, 회전/저해상도여도 자동 판독하며 API 키는 서버에만 보관됩니다.</p>
     </aside>
 
     <!-- 콘텐츠 -->
     <main class="content">
-      <p id="status" class="status">기준 문안 PDF와 디자인 PDF를 선택한 후 [검수 시작]을 누르세요.</p>
+      <p id="status" class="status">① 기준 문안과 ② 디자인을 넣은 후 [검수 시작]을 누르세요.</p>
 
       <div class="tabs">
         <button class="tab active" data-tab="result">검수 결과</button>
