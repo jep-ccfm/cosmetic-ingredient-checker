@@ -9,8 +9,8 @@ const MODEL = process.env.MODEL || "claude-opus-4-8";
 const INSTRUCTION = `당신은 화장품 패키지 문안을 검수하는 전문 교정자입니다.
 
 두 종류의 자료가 주어집니다.
-- [기준 문안]: 무조건 올바른 정답 자료. 여기에 적힌 문구가 기준입니다.
-- [디자인]: 실제 인쇄될 패키지 디자인. 검수 대상이며, 이 안에서 문제 지점을 찾습니다.
+- [기준 문안]: 무조건 올바른 정답 자료. 여기에 적힌 문구가 기준입니다. (텍스트 또는 이미지로 제공)
+- [디자인]: 실제 인쇄될 패키지 디자인. 검수 대상이며, 이 안에서 문제 지점을 찾습니다. (이미지로 제공)
 
 두 자료의 텍스트를 모두 읽고, "내용(문구)" 기준으로 짝을 지어 대조하세요.
 두 자료는 레이아웃과 위치가 서로 다를 수 있으니, 위치가 아니라 내용으로 매칭합니다.
@@ -98,16 +98,27 @@ module.exports = async (req, res) => {
     res.status(400).json({ error: "잘못된 요청 본문입니다." });
     return;
   }
-  if (!Array.isArray(reference) || !reference.length || !Array.isArray(target) || !target.length) {
-    res.status(400).json({ error: "기준 문안/디자인 이미지가 모두 필요합니다." });
+  // reference: { text?: string, images?: [b64...] }  (구버전 배열도 허용)
+  // target:    { images: [b64...] }                  (구버전 배열도 허용)
+  const refImages = Array.isArray(reference) ? reference : (reference && reference.images) || null;
+  const refText = reference && !Array.isArray(reference) ? reference.text : null;
+  const tgtImages = Array.isArray(target) ? target : (target && target.images) || null;
+
+  const hasRef = (refImages && refImages.length) || (refText && refText.trim());
+  if (!hasRef || !Array.isArray(tgtImages) || !tgtImages.length) {
+    res.status(400).json({ error: "기준 문안(텍스트/이미지)과 디자인 이미지가 모두 필요합니다." });
     return;
   }
 
   const content = [];
   content.push({ type: "text", text: "===== [기준 문안] (정답 자료) =====" });
-  pushImages(content, reference, "기준 문안", mediaType);
+  if (refText && refText.trim()) {
+    content.push({ type: "text", text: "다음은 기준 문안 텍스트입니다:\n" + refText.trim() });
+  } else {
+    pushImages(content, refImages, "기준 문안", mediaType);
+  }
   content.push({ type: "text", text: "===== [디자인] (검수 대상) =====" });
-  pushImages(content, target, "디자인", mediaType);
+  pushImages(content, tgtImages, "디자인", mediaType);
   content.push({ type: "text", text: INSTRUCTION });
 
   try {
