@@ -109,7 +109,10 @@ function activateTab(name) { document.querySelector(`.tab[data-tab="${name}"]`).
 
 // 한 쪽 입력을 로드 → { text } (문안 텍스트) 또는 { pages: [{b64, dataUrl}] }
 // URL이 있으면 URL 우선.
+// 문안(reference) PDF는 텍스트 레이어가 있으면 텍스트로 추출 → 이미지 판독 생략(속도·정확도↑).
 async function loadSide(file, url, which) {
+  // 1) 소스 확보
+  let src; // { kind:'text'|'pdf'|'image', text?, bytes?, dataUrl? }
   if (url) {
     const r = await fetch("/api/fetch", {
       method: "POST",
@@ -121,23 +124,45 @@ async function loadSide(file, url, which) {
       throw new Error(`링크 불러오기 실패 (${r.status}) ${d}`);
     }
     const j = await r.json();
-    if (j.kind === "text") {
-      if (which === "target") throw new Error("디자인 링크는 PDF/이미지 파일이어야 합니다.");
-      return { text: j.text };
-    }
-    if (j.kind === "pdf") return { pages: await pdfToJpegPages(base64ToBytes(j.b64)) };
-    if (j.kind === "image") return { pages: [await imageToJpegPage(`data:${j.mediaType};base64,${j.b64}`)] };
-    throw new Error("링크에서 지원하는 콘텐츠를 찾지 못했습니다.");
+    if (j.kind === "text") src = { kind: "text", text: j.text };
+    else if (j.kind === "pdf") src = { kind: "pdf", bytes: base64ToBytes(j.b64) };
+    else if (j.kind === "image") src = { kind: "image", dataUrl: `data:${j.mediaType};base64,${j.b64}` };
+    else throw new Error("링크에서 지원하는 콘텐츠를 찾지 못했습니다.");
+  } else if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
+    src = { kind: "pdf", bytes: new Uint8Array(await file.arrayBuffer()) };
+  } else if (file.type.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(file.name)) {
+    src = { kind: "image", dataUrl: await fileToDataUrl(file) };
+  } else {
+    throw new Error(`지원하지 않는 파일 형식입니다: ${file.name} (PDF·이미지만)`);
   }
 
-  // 파일
-  if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) {
-    return { pages: await pdfToJpegPages(await file.arrayBuffer()) };
+  // 2) 종류별 처리
+  if (src.kind === "text") {
+    if (which === "target") throw new Error("디자인은 PDF/이미지여야 합니다 (텍스트 링크 불가).");
+    return { text: src.text };
   }
-  if (file.type.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(file.name)) {
-    return { pages: [await imageToJpegPage(await fileToDataUrl(file))] };
+  if (src.kind === "image") {
+    return { pages: [await imageToJpegPage(src.dataUrl)] };
   }
-  throw new Error(`지원하지 않는 파일 형식입니다: ${file.name} (PDF·이미지만)`);
+  // pdf
+  if (which === "reference") {
+    const text = await pdfToText(src.bytes.slice(0)); // 복제본으로 텍스트 추출
+    if (text.replace(/\s/g, "").length >= 20) return { text }; // 텍스트 레이어 충분 → 텍스트 사용
+  }
+  return { pages: await pdfToJpegPages(src.bytes.slice(0)) }; // 스캔 PDF 등 → 이미지 판독
+}
+
+// PDF 텍스트 레이어 추출 (문안용)
+async function pdfToText(data) {
+  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  const out = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const tc = await page.getTextContent();
+    const s = tc.items.map((it) => it.str).join(" ");
+    if (s.trim()) out.push(s);
+  }
+  return out.join("\n");
 }
 
 // PDF(ArrayBuffer/Uint8Array) → 페이지별 JPEG
